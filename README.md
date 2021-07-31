@@ -47,7 +47,6 @@ If you prefer to explicitly provide a profile name then use the following struct
 
 ```json
 {
-  ...
   "ssoCredentialProvider": {
     "acme": {
       "dev": {
