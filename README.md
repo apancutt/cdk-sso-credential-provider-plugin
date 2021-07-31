@@ -14,7 +14,6 @@ Add the plugin to your `cdk.json` file:
 
 ```json
 {
-  ...
   "plugin": [
     "cdk-sso-credential-provider-plugin"
   ]
@@ -25,7 +24,6 @@ Configure the apps and accounts used in your CDK project in your `package.json` 
 
 ```json
 {
-  ...
   "ssoCredentialProvider": {
     "acme": {
       "dev": "123",
