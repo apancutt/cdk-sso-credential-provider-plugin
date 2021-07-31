@@ -25,7 +25,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "prebuild": "rimraf ./dist"
+    "prebuild": "rimraf ./dist",
+    "prepublishOnly": "yarn run build"
   },
   "types": "dist/index.d.ts"
 }
