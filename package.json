@@ -1,6 +1,6 @@
 {
   "name": "cdk-sso-credential-provider-plugin",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Obtain credentials for each AWS account targeted by your stacks using named SSO profiles.",
   "homepage": "https://github.com/apancutt/cdk-sso-credential-provider-plugin#readme",
   "bugs": {
