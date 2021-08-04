@@ -3,6 +3,8 @@ import { PluginHost } from 'aws-cdk/lib/plugin'; // CDK2 no longer exports these
 import { SsoCredentialProviderSource } from './SsoCredentialProviderSource';
 import { PackageJsonConfigurationLoader } from './PackageJsonConfigurationLoader';
 
+export * from './types';
+
 export const init = (host: PluginHost): void => {
   host.registerCredentialProviderSource(
     new SsoCredentialProviderSource(
