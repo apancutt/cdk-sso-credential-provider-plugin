@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { PluginHost } from 'aws-cdk/lib/plugin'; // CDK2 no longer exports these types from 'aws-cdk'
+import { PluginHost } from 'aws-cdk/lib/api/plugin';
 import { SsoCredentialProviderSource } from './SsoCredentialProviderSource';
 import { PackageJsonConfigurationLoader } from './PackageJsonConfigurationLoader';
 

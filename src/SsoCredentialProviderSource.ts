@@ -1,7 +1,7 @@
 import { fromSSO } from '@aws-sdk/credential-provider-sso';
-import type { CredentialProviderSource, Mode } from 'aws-cdk/lib/api'; // CDK2 no longer exports these types from 'aws-cdk'
+import { CredentialProviderSource, Mode } from 'aws-cdk/lib/api/plugin';
 import { success } from 'aws-cdk/lib/logging';
-import { Credentials } from 'aws-sdk'; // CDK1 and 2 both require an instance of Credentials from aws-sdk v2
+import { Credentials } from 'aws-sdk';
 import { blue } from 'colors/safe';
 import type { AccountConfiguration, AccountId, AccountName, AppName, Configuration, ExplicitAccountConfiguration, ImplicitAccountConfiguration, ProfileName } from './types';
 

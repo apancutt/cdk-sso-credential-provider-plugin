@@ -2,7 +2,7 @@
 
 Obtain credentials for each AWS account targeted by your stacks using named SSO profiles.
 
-Supports both CDK v1 and v2.
+Allows your CDK app to deploy stacks to any account/region with a named SSO profile.
 
 ## Installation
 
@@ -50,11 +50,11 @@ If you prefer to explicitly provide a profile name then use the following struct
   "ssoCredentialProvider": {
     "acme": {
       "dev": {
-        "accountId": "123",
+        "accountId": "11111111",
         "profileName": "my-custom-profile-name"
       },
       "prod": {
-        "accountId": "456",
+        "accountId": "22222222",
         "profileName": "my-other-custom-profile-name"
       }
     }
@@ -70,7 +70,8 @@ If you prefer to explicitly provide a profile name then use the following struct
     aws sso login --profile YOUR_PROFILE_NAME
     ```
 
-2. Run your `cdk` commands as normal.
+2. Run your `cdk` commands as normal. You do not need to use the `--profile` option since the plugin
+   will retrieve credentials when required using the [inferred profile names](#profile-name-inference).
 
 ### Share Configuration With Stacks (Optional)
 
@@ -78,15 +79,13 @@ To keep things [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself), you
 the configuration used by this plugin in your stack definitions, e.g.
 
 ```typescript
-// Uncomment one of the lines below according to the CDK version you use
-//import * as cdk from '@aws-cdk/core'; // CDK v1
-//import * as cdk from 'aws-cdk-lib'; // CDK v2
+import { App, Stack } from 'aws-cdk-lib';
 import pkg from '../package.json';
 
-const app = new cdk.App();
+const app = new App();
 
 // Create a stack in the acme dev account
-const stack = new cdk.Stack(app, 'AcmeDevStack', {
+const stack = new Stack(app, 'AcmeDevStack', {
   env: {
     account: pkg.ssoCredentialProvider.acme.dev,
   },
@@ -97,16 +96,20 @@ const stack = new cdk.Stack(app, 'AcmeDevStack', {
 
 ## How it Works
 
-When the CDK needs credentials for an account ID it will ask the plugin to provide them.
+When the CDK encounters an account ID that it does not have credentials for it will ask the plugin
+to provide them.
 
-The plugin uses [`@aws-sdk/credential-provider-sso`](https://www.npmjs.com/package/@aws-sdk/credential-provider-sso) to yeild credentials from your locally-configured SSO accounts using the [profile name](#profile-name-inference)
+Internally, this plugin uses [`@aws-sdk/credential-provider-sso`](https://www.npmjs.com/package/@aws-sdk/credential-provider-sso)
+to obtain credentials from your locally-configured SSO accounts using the [profile name](#profile-name-inference)
 derived from the configuration provided in your `package.json`.
 
 ## Rationale
 
-Neither CDK v1 nor v2 support SSO credentials. While there are several workarounds, this plugin aims
-to provide the simplest solution. Hopefully, this will be temporary until the CDK support SSO
-credentials natively.
+While the CDK finally supports SSO credentials when using the `--profile` option, it does support
+deploying stacks to multiple accounts using named profiles within a single app.
 
-A similar package named [`cdk-multi-profile-plugin`](https://www.npmjs.com/package/cdk-multi-profile-plugin)
-also exists which attempts to address this issue but it does not work with CDK v2.
+The [`cdk-multi-profile-plugin`](https://www.npmjs.com/package/cdk-multi-profile-plugin) now
+supports CDK 2 so might be a better solution for you since it works with more than just SSO. A
+*slight* benefit to this plugin, however, is how the configuration is structured since it allows you
+to reference the account configuration by name rather than explicit account ID (e.g. you can do
+`{ env: { account: pkg.ssoCredentialProvider.acme.dev } }` instead of `{ env: { account: '11111111' } }`.
