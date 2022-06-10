@@ -3,43 +3,29 @@ import { CredentialProviderSource, Mode } from 'aws-cdk/lib/api/plugin';
 import { success } from 'aws-cdk/lib/logging';
 import { Credentials } from 'aws-sdk';
 import { blue } from 'colors/safe';
-import type { AccountConfiguration, AccountId, AccountName, AppName, Configuration, ExplicitAccountConfiguration, ImplicitAccountConfiguration, ProfileName } from './types';
+import type { AccountId, AccountName, AppName, Configuration, ProfileName } from './types';
 
 /**
  * Provides credentials to the CDK using the SSO credential provider provided by AWS SDK v3.
  */
 export class SsoCredentialProviderSource implements CredentialProviderSource {
 
-  public readonly config: Record<AccountId, { appName: AppName, accountName: AccountName, profileName: ProfileName }>;
+  // Optimize lookups by restructing the incoming config by keying by account ID
+  public readonly config: Record<AccountId, { accountName: AccountName; appName: AppName; profileName: ProfileName }>;
+
   public readonly name = 'cdk-sso-credential-provider-plugin';
 
   public constructor(config: Configuration) {
-    // Optimize the incoming config by indexing by account ID
     this.config = Object.entries(config).reduce((acc, [ appName, accounts ]) => ({
       ...acc,
-      ...Object.entries(accounts).reduce((acc2, [ accountName, accountConfiguration ]) => {
-
-        let accountId: AccountId;
-        let profileName: ProfileName;
-
-        if (SsoCredentialProviderSource.isImplicitAccountConfiguration(accountConfiguration)) {
-          accountId = accountConfiguration;
-          profileName = SsoCredentialProviderSource.inferProfileName(appName, accountName);
-        } else {
-          accountId = accountConfiguration.accountId;
-          profileName = accountConfiguration.profileName ?? SsoCredentialProviderSource.inferProfileName(appName, accountName);
-        }
-
-        return {
-          ...acc2,
-          [accountId]: {
-            accountName,
-            appName,
-            profileName,
-          },
-        };
-
-      }, {}),
+      ...Object.entries(accounts).reduce((acc, [ accountName, accountConfiguration ]) => ({
+        ...acc,
+        [accountConfiguration.accountId]: {
+          accountName,
+          appName,
+          profileName: accountConfiguration.profileName,
+        },
+      }), {}),
     }), {});
   }
 
@@ -56,18 +42,6 @@ export class SsoCredentialProviderSource implements CredentialProviderSource {
     success(` 🔑  Obtaining ${blue(appName)} credentials for account ${blue(accountId)} (${blue(accountName)}) using SSO profile ${blue(profileName)}`);
     const { accessKeyId, secretAccessKey, sessionToken } = await fromSSO({ profile: profileName })();
     return new Credentials(accessKeyId, secretAccessKey, sessionToken);
-  }
-
-  protected static isExplicitAccountConfiguration(config: AccountConfiguration): config is ExplicitAccountConfiguration {
-    return !this.isImplicitAccountConfiguration(config);
-  }
-
-  protected static isImplicitAccountConfiguration(config: AccountConfiguration): config is ImplicitAccountConfiguration {
-    return 'string' === typeof config;
-  }
-
-  protected static inferProfileName(appName: AppName, accountName: AccountName): ProfileName {
-    return `${appName}-${accountName}`;
   }
 
 }

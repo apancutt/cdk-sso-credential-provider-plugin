@@ -1,7 +1,7 @@
 import { blue } from 'colors/safe';
 import { existsSync, readFileSync } from 'fs';
 import { ConfigurationLoader } from './ConfigurationLoader';
-import type { Configuration } from './types';
+import { RawConfiguration } from './types';
 
 /**
  * Loads configuration from a package.json file.
@@ -17,7 +17,7 @@ export class PackageJsonConfigurationLoader extends ConfigurationLoader {
     this.path = path;
   }
 
-  public load(): Configuration {
+  protected loadRaw() {
     if (!existsSync(this.path)) {
       throw new Error(`A package.json was not found at ${blue(this.path)}`);
     }
@@ -28,7 +28,7 @@ export class PackageJsonConfigurationLoader extends ConfigurationLoader {
     if ('object' !== typeof config) {
       throw new Error(`Configuration of ${blue(PackageJsonConfigurationLoader.KEY)} in your package.json file is invalid`);
     }
-    return config as Configuration;
+    return config as RawConfiguration;
   }
 
 }
